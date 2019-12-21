@@ -12,6 +12,7 @@ func showIndexPage(c *gin.Context) {
 		"index.html",
 		gin.H{
 			"title": "Home Page",
+			"payload": getAllArticles(),
 		},
 	)
 }
