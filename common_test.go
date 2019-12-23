@@ -9,6 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+
+var tmpUserList []user
+
 func TestMain(m *testing.M) {
 	gin.SetMode(gin.TestMode)
 	os.Exit(m.Run())
@@ -28,4 +31,12 @@ func testHTTPResponse(t *testing.T, r *gin.Engine, req *http.Request, f func(w *
 	if !f(w) {
 		t.Fail()
 	}
+}
+
+func saveUserList() {
+	tmpUserList = userList
+}
+
+func restoreUserList() {
+	userList = tmpUserList
 }
