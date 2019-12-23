@@ -50,10 +50,50 @@ func TestRegisterUnavailableUsername(t *testing.T) {
 	})
 }
 
+func TestShowLoginPageUnauthenticated(t *testing.T) {
+	r := getRouter(true)
+	r.GET("/user/login", showLoginPage)
+	req, _ := http.NewRequest("GET", "/user/login", nil)
+	testHTTPResponse(t, r, req, func(w *httptest.ResponseRecorder) bool {
+		statusOK := w.Code == http.StatusOK
+		p, err := ioutil.ReadAll(w.Body)
+		pageOK := err == nil && strings.Index(string(p), "<title>Login</title>") > 0
+		return statusOK && pageOK
+	})
+}
+
+func TestLoginUnauthenticated(t *testing.T) {
+	r := getRouter(true)
+	r.POST("/user/login", login)
+	payload := getLoginPOSTPayload()
+	req, _ := http.NewRequest("POST", "/user/login", strings.NewReader(payload))
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Add("Content-Length", strconv.Itoa(len(payload)))
+	testHTTPResponse(t, r, req, func(w *httptest.ResponseRecorder) bool {
+		statusOK := w.Code == http.StatusOK
+		p, err := ioutil.ReadAll(w.Body)
+		pageOK := err == nil && strings.Index(string(p), "<title>Login Success</title>") > 0
+		return statusOK && pageOK
+	})
+}
+
+func TestLoginUnauthenticatedIncorrectCredentials(t *testing.T) {
+	r := getRouter(true)
+	r.POST("/user/login", login)
+	payload := getRegistrationPOSTPayload()
+	req, _ := http.NewRequest("POST", "/user/login", strings.NewReader(payload))
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Add("Content-Length", strconv.Itoa(len(payload)))
+	testHTTPResponse(t, r, req, func(w *httptest.ResponseRecorder) bool {
+		statusOK := w.Code == http.StatusBadRequest
+		return statusOK
+	})
+}
+
 func getLoginPOSTPayload() string {
 	params := url.Values{}
 	params.Add("username", "user1")
-	params.Add("password", "pass1")
+	params.Add("password", "password1")
 	return params.Encode()
 }
 

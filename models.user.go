@@ -35,3 +35,12 @@ func isUsernameAvailable(username string) bool {
 	}
 	return true
 }
+
+func isUserValid(username, password string) bool {
+	for _, u := range userList {
+		if u.Username == username && u.Password == password {
+			return true
+		}
+	}
+	return false
+}

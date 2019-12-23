@@ -32,3 +32,28 @@ func register(c *gin.Context) {
 			"ErrorMessage": err.Error()})
 	}
 }
+
+func showLoginPage(c *gin.Context) {
+	render(c, gin.H{
+		"title": "Login"}, "login.html")
+}
+
+func login(c *gin.Context) {
+	username := c.PostForm("username")
+	password := c.PostForm("password")
+	if isUserValid(username, password) {
+		token := generateSessionToken()
+		c.SetCookie("token", token, 3600, "", "", false, true)
+		render(c, gin.H{
+			"title": "Login Success"}, "login-successful.html")
+	} else {
+		c.HTML(http.StatusBadRequest, "login.html", gin.H{
+			"ErrorTitle": "Login Failed",
+			"ErrorMessage": "Invalid username or password"})
+	}
+}
+
+func logout(c *gin.Context) {
+	c.SetCookie("token", "", -1, "", "", false, true)
+	c.Redirect(http.StatusTemporaryRedirect, "/")
+}

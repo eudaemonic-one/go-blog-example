@@ -38,3 +38,21 @@ func TestUsernameAvailablility(t *testing.T) {
 	}
 	restoreUserList()
 }
+
+func TestUserValidity(t *testing.T) {
+	if !isUserValid("user1", "password1") {
+		t.Fail()
+	}
+	if isUserValid("user2", "password1") {
+		t.Fail()
+	}
+	if isUserValid("user1", "") {
+		t.Fail()
+	}
+	if isUserValid("", "password1") {
+		t.Fail()
+	}
+	if isUserValid("User1", "password1") {
+		t.Fail()
+	}
+}

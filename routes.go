@@ -7,5 +7,8 @@ func initializeRoutes() {
 	{
 		userRoutes.GET("/register", showRegisterPage)
 		userRoutes.POST("/register", register)
+		userRoutes.GET("/login", showLoginPage)
+		userRoutes.POST("/login", login)
+		userRoutes.GET("/logout", logout)
 	}
 }
