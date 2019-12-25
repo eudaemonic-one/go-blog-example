@@ -13,9 +13,12 @@ import (
 )
 
 func TestShowIndexPageUnauthenticated(t *testing.T) {
+	w := httptest.NewRecorder()
 	r := getRouter(true)
+	http.SetCookie(w, &http.Cookie{Name:"token", Value:"123"})
 	r.GET("/", showIndexPage)
 	req, _ := http.NewRequest("GET", "/", nil)
+	req.Header = http.Header{"Cookie": w.HeaderMap["Set-Cookie"]}
 	testHTTPResponse(t, r, req, func(w *httptest.ResponseRecorder) bool{
 		statusOK := w.Code == http.StatusOK
 		p, err := ioutil.ReadAll(w.Body)
@@ -58,11 +61,28 @@ func TestArticleXML(t *testing.T) {
 	})
 }
 
+func TestArticleAuthenticated(t *testing.T) {
+	w := httptest.NewRecorder()
+	r := getRouter(true)
+	http.SetCookie(w, &http.Cookie{Name: "token", Value: "123"})
+	r.GET("/article/view/:article_id", getArticle)
+	req, _ := http.NewRequest("GET", "/article/view/1", nil)
+	req.Header = http.Header{"Cookie": w.HeaderMap["Set-Cookie"]}
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fail()
+	}
+	p, err := ioutil.ReadAll(w.Body)
+	if err != nil || strings.Index(string(p), "<title>Article 1</title>") < 0 {
+		t.Fail()
+	}
+}
+
 func TestArticleCreationAuthenticated(t *testing.T) {
 	r := getRouter(true)
 	w := httptest.NewRecorder()
 	http.SetCookie(w, &http.Cookie{Name:"token", Value: "123"})
-	r.POST("/article/create", createArticle)
+	r.POST("/article/create", ensureLoggedIn(), createArticle)
 	articlePayload := getArticlePOSTPayload()
 	req, _ := http.NewRequest("POST", "/article/create", strings.NewReader(articlePayload))
 	req.Header = http.Header{"Cookie": w.HeaderMap["Set-Cookie"]}
@@ -76,6 +96,18 @@ func TestArticleCreationAuthenticated(t *testing.T) {
 	if err != nil || strings.Index(string(p), "<title>Submission Successful</title>") < 0 {
 		t.Fail()
 	}
+}
+
+func TestArticleCreationUnauthenticated(t *testing.T) {
+	r := getRouter(true)
+	r.POST("/article/create", ensureLoggedIn(), createArticle)
+	articlePayload := getArticlePOSTPayload()
+	req, _ := http.NewRequest("POST", "/article/create", strings.NewReader(articlePayload))
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Add("Content-Length", strconv.Itoa(len(articlePayload)))
+	testHTTPResponse(t, r, req, func(w *httptest.ResponseRecorder) bool {
+		return w.Code == http.StatusUnauthorized
+	})
 }
 
 func getArticlePOSTPayload() string {

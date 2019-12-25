@@ -44,6 +44,7 @@ func login(c *gin.Context) {
 	if isUserValid(username, password) {
 		token := generateSessionToken()
 		c.SetCookie("token", token, 3600, "", "", false, true)
+		c.Set("is_logged_in", true)
 		render(c, gin.H{
 			"title": "Login Success"}, "login-successful.html")
 	} else {
@@ -55,5 +56,6 @@ func login(c *gin.Context) {
 
 func logout(c *gin.Context) {
 	c.SetCookie("token", "", -1, "", "", false, true)
+	c.Set("is_logged_in", false)
 	c.Redirect(http.StatusTemporaryRedirect, "/")
 }
