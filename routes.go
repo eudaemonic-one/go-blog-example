@@ -2,7 +2,6 @@ package main
 
 func initializeRoutes() {
 	router.GET("/", showIndexPage)
-	router.GET("/article/view/:article_id", getArticle)
 	userRoutes := router.Group("/user")
 	{
 		userRoutes.GET("/register", showRegisterPage)
@@ -10,5 +9,12 @@ func initializeRoutes() {
 		userRoutes.GET("/login", showLoginPage)
 		userRoutes.POST("/login", login)
 		userRoutes.GET("/logout", logout)
+	}
+
+	articleRoutes := router.Group("/article")
+	{
+		articleRoutes.GET("/view/:article_id", getArticle)
+		articleRoutes.GET("/create", getArticle)
+		articleRoutes.POST("/create", createArticle)
 	}
 }

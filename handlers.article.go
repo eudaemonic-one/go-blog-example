@@ -20,3 +20,20 @@ func getArticle(c *gin.Context) {
 		c.AbortWithStatus(http.StatusNotFound)
 	}
 }
+
+func showArticleCreationPage(c *gin.Context) {
+	render(c, gin.H{
+		"title": "Create New Article"}, "create-article.html")
+}
+
+func createArticle(c *gin.Context) {
+	title := c.PostForm("title")
+	content := c.PostForm("content")
+	if a, err := createNewArticle(title, content); err == nil {
+		render(c, gin.H{
+			"title": "Submission Successful",
+			"payload": a}, "submission-successful.html")
+	} else {
+		c.AbortWithStatus(http.StatusBadRequest)
+	}
+}
